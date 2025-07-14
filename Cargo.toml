@@ -1,0 +1,14 @@
+[package]
+name = "unifs"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = [ "fs_access" ]
+fs_access = []
+
+[dependencies]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
