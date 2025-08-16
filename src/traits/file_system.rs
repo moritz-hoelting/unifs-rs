@@ -1,4 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::{
+    io::Write as _,
+    path::{Path, PathBuf},
+};
 
 use crate::{
     traits::{dir_builder::UniDirBuilder, open_options::UniOpenOptions},
@@ -170,7 +173,14 @@ where
     /// and will entirely replace its contents if it does.
     ///
     /// This function mirrors the [`std::fs::write`] function.
-    fn write<P: AsRef<Path>, C: AsRef<[u8]>>(&self, path: P, contents: C) -> Result<()>;
+    fn write<P: AsRef<Path>, C: AsRef<[u8]>>(&self, path: P, contents: C) -> Result<()> {
+        self.new_openoptions()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .open(path.as_ref())?
+            .write_all(contents.as_ref())
+    }
 
     /// Attempts to open a file in read-only mode.
     ///
@@ -179,7 +189,9 @@ where
     /// If you only need to read the entire file contents, consider [`UniFs::read()`] or [`UniFs::read_to_string()`] instead.
     ///
     /// Used instead of [`std::fs::File::open`] to allow using the [`UniFs`] trait.
-    fn open_file<P: AsRef<Path>>(&self, path: P) -> Result<Self::File>;
+    fn open_file<P: AsRef<Path>>(&self, path: P) -> Result<Self::File> {
+        self.new_openoptions().read(true).open(path.as_ref())
+    }
 
     /// Opens a file in write-only mode.
     ///

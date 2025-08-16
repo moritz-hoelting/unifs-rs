@@ -1,12 +1,13 @@
 use std::{
     fmt::Debug,
-    io::{IsTerminal, Read, Seek, Write},
+    io::{Read, Seek, Write},
     time::SystemTime,
 };
 
-use crate::{traits::UniFileTimes, UniMetadata, UniPermissions, Result};
+use crate::{traits::UniFileTimes, Result, UniMetadata, UniPermissions};
 
-pub trait UniFile: Debug + IsTerminal + Read + Seek + Write + Sized
+/// A trait representing a unified file type that can be used across different filesystems.
+pub trait UniFile: Debug + Read + Seek + Write + Sized
 where
     for<'a> &'a mut Self: Read + Seek + Write,
 {

@@ -155,6 +155,7 @@ pub trait UniDirEntry {
     fn file_name(&self) -> OsString;
 }
 
+/// A trait that abstracts over file times.
 pub trait UniFileTimes: Default {
     /// Set the last access time of a file.
     fn set_accessed(self, t: SystemTime) -> Self;

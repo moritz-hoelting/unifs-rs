@@ -2,6 +2,7 @@ use std::path::Path;
 
 use crate::Result;
 
+/// A trait for building and creating directories in a filesystem.
 pub trait UniDirBuilder {
     /// Indicates that directories should be created recursively,
     /// creating all parent directories. Parents that do not exist

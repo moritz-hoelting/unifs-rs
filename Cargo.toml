@@ -4,10 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-default = [ "fs_access" ]
+default = ["fs_access", "memory_fs"]
 fs_access = []
+memory_fs = []
+parking_lot = ["dep:parking_lot"]
 
 [dependencies]
+parking_lot = { version = "0.12.4", optional = true }
 
 [package.metadata.docs.rs]
 all-features = true
