@@ -15,7 +15,7 @@ use crate::{
         open_options::MemoryOpenOptions,
     },
     rw_lock::RwLock,
-    Permissions, UniDirBuilder as _, UniDirEntry, UniFs,
+    Permissions, UniDirEntry, UniFs,
 };
 
 mod dir_builder;
@@ -746,10 +746,6 @@ impl UniFs for MemoryFs {
     fn create_dir<P: AsRef<Path>>(&self, path: P) -> crate::Result<()> {
         let mut inner = self.inner.write();
         create_dir(&mut inner, path)
-    }
-
-    fn create_dir_all<P: AsRef<Path>>(&self, path: P) -> crate::Result<()> {
-        self.new_dirbuilder().recursive(true).create(path.as_ref())
     }
 
     fn exists<P: AsRef<Path>>(&self, path: P) -> crate::Result<bool> {

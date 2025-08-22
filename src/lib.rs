@@ -18,8 +18,9 @@ use std::{fmt::Debug, time::SystemTime};
 
 #[doc(inline)]
 pub use traits::{
-    dir_builder::UniDirBuilder, file::UniFile, file_system::UniFs, open_options::UniOpenOptions,
-    UniDirEntry, UniFileTimes, UniFileType, UniMetadata, UniPermissions,
+    dir_builder::UniDirBuilder, file::UniFile, file_system::UniFs, file_system_ext::UniFsExt,
+    open_options::UniOpenOptions, UniDirEntry, UniFileTimes, UniFileType, UniMetadata,
+    UniPermissions,
 };
 
 #[doc(inline)]

@@ -73,7 +73,9 @@ where
     /// been created already.
     ///
     /// This function mirrors the [`std::fs::create_dir_all`] function.
-    fn create_dir_all<P: AsRef<Path>>(&self, path: P) -> Result<()>;
+    fn create_dir_all<P: AsRef<Path>>(&self, path: P) -> Result<()> {
+        self.new_dirbuilder().recursive(true).create(path.as_ref())
+    }
 
     /// Returns `Ok(true)` if the path points at an existing entity.
     ///

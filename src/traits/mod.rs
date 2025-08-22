@@ -5,6 +5,7 @@ use crate::Result;
 pub(crate) mod dir_builder;
 pub(crate) mod file;
 pub(crate) mod file_system;
+pub(crate) mod file_system_ext;
 pub(crate) mod open_options;
 
 /// A trait that represents metadata about a file or directory.
