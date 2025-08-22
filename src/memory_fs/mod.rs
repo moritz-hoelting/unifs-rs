@@ -676,12 +676,12 @@ fn rename<P: AsRef<Path>, Q: AsRef<Path>>(
 
         if let (Some(from_parent), Some(to_parent)) = (from_parent, to_parent) {
             if from_parent != to_parent {
-                if let Some(from_entry) = dbg!(inner.files.get_mut(from_parent)) {
+                if let Some(from_entry) = inner.files.get_mut(from_parent) {
                     if let Some(files) = from_entry.file_type.as_directory_mut() {
                         files.remove(from.file_name().unwrap());
                     }
                 }
-                if let Some(to_entry) = dbg!(inner.files.get_mut(to_parent)) {
+                if let Some(to_entry) = inner.files.get_mut(to_parent) {
                     if let Some(files) = to_entry.file_type.as_directory_mut() {
                         files.insert(to.file_name().unwrap().to_owned());
                     }

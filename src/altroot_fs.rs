@@ -1,6 +1,10 @@
 //! This module provides an alternative root directory for a filesystem.
 
-use std::{io::ErrorKind, path::PathBuf};
+use std::{
+    borrow::Cow,
+    io::ErrorKind,
+    path::{Path, PathBuf},
+};
 
 use crate::{Result, UniDirBuilder, UniDirEntry, UniFs, UniMetadata, UniOpenOptions};
 
@@ -30,6 +34,22 @@ pub struct AltrootDirBuilder<T: UniDirBuilder> {
     inner: T,
 }
 
+fn get_real_path<P: AsRef<Path>, Q: AsRef<Path>>(root: P, path: Q) -> PathBuf {
+    let path = path.as_ref();
+
+    let path = if path
+        .components()
+        .next()
+        .is_some_and(|comp| matches!(comp, std::path::Component::RootDir))
+    {
+        Cow::Owned(path.components().skip(1).collect::<PathBuf>())
+    } else {
+        Cow::Borrowed(path)
+    };
+
+    root.as_ref().join(path)
+}
+
 impl<FS: UniFs> AltrootFs<FS> {
     pub fn new<P: Into<PathBuf>>(root: P, fs: FS) -> Result<Self> {
         let root = root.into();
@@ -57,6 +77,10 @@ impl<FS: UniFs> AltrootFs<FS> {
         }
         Self::new(root, fs)
     }
+
+    fn get_real_path<P: AsRef<Path>>(&self, path: P) -> PathBuf {
+        get_real_path(&self.root, path)
+    }
 }
 
 impl<FS: UniFs> UniFs for AltrootFs<FS> {
@@ -82,26 +106,25 @@ impl<FS: UniFs> UniFs for AltrootFs<FS> {
         from: P,
         to: Q,
     ) -> Result<u64> {
-        let from = self.root.join(from);
-        let to = self.root.join(to);
+        let from = self.get_real_path(from);
+        let to = self.get_real_path(to);
 
         self.fs.copy(from, to)
     }
 
     fn create_dir<P: AsRef<std::path::Path>>(&self, path: P) -> Result<()> {
-        let path = self.root.join(path);
-
+        let path = self.get_real_path(path);
         self.fs.create_dir(path)
     }
 
     fn create_dir_all<P: AsRef<std::path::Path>>(&self, path: P) -> Result<()> {
-        let path = self.root.join(path);
+        let path = self.get_real_path(path);
 
         self.fs.create_dir_all(path)
     }
 
     fn exists<P: AsRef<std::path::Path>>(&self, path: P) -> Result<bool> {
-        let path = self.root.join(path);
+        let path = self.get_real_path(path);
 
         self.fs.exists(path)
     }
@@ -111,26 +134,26 @@ impl<FS: UniFs> UniFs for AltrootFs<FS> {
         original: P,
         link: Q,
     ) -> Result<()> {
-        let original = self.root.join(original);
-        let link = self.root.join(link);
+        let original = self.get_real_path(original);
+        let link = self.get_real_path(link);
 
         self.fs.hard_link(original, link)
     }
 
     fn metadata<P: AsRef<std::path::Path>>(&self, path: P) -> Result<Self::Metadata> {
-        let path = self.root.join(path);
+        let path = self.get_real_path(path);
 
         self.fs.metadata(path)
     }
 
     fn read<P: AsRef<std::path::Path>>(&self, path: P) -> Result<Vec<u8>> {
-        let path = self.root.join(path);
+        let path = self.get_real_path(path);
 
         self.fs.read(path)
     }
 
     fn read_dir<P: AsRef<std::path::Path>>(&self, path: P) -> Result<Self::ReadDir> {
-        let path = self.root.join(path);
+        let path = self.get_real_path(path);
 
         self.fs.read_dir(path).map(|r| AltrootReadDir {
             root: self.root.clone(),
@@ -139,31 +162,31 @@ impl<FS: UniFs> UniFs for AltrootFs<FS> {
     }
 
     fn read_link<P: AsRef<std::path::Path>>(&self, path: P) -> Result<PathBuf> {
-        let path = self.root.join(path);
+        let path = self.get_real_path(path);
 
         self.fs.read_link(path)
     }
 
     fn read_to_string<P: AsRef<std::path::Path>>(&self, path: P) -> Result<String> {
-        let path = self.root.join(path);
+        let path = self.get_real_path(path);
 
         self.fs.read_to_string(path)
     }
 
     fn remove_dir<P: AsRef<std::path::Path>>(&self, path: P) -> Result<()> {
-        let path = self.root.join(path);
+        let path = self.get_real_path(path);
 
         self.fs.remove_dir(path)
     }
 
     fn remove_dir_all<P: AsRef<std::path::Path>>(&self, path: P) -> Result<()> {
-        let path = self.root.join(path);
+        let path = self.get_real_path(path);
 
         self.fs.remove_dir_all(path)
     }
 
     fn remove_file<P: AsRef<std::path::Path>>(&self, path: P) -> Result<()> {
-        let path = self.root.join(path);
+        let path = self.get_real_path(path);
 
         self.fs.remove_file(path)
     }
@@ -173,8 +196,8 @@ impl<FS: UniFs> UniFs for AltrootFs<FS> {
         from: P,
         to: Q,
     ) -> Result<()> {
-        let from = self.root.join(from);
-        let to = self.root.join(to);
+        let from = self.get_real_path(from);
+        let to = self.get_real_path(to);
 
         self.fs.rename(from, to)
     }
@@ -184,25 +207,25 @@ impl<FS: UniFs> UniFs for AltrootFs<FS> {
         path: P,
         perm: Self::Permissions,
     ) -> Result<()> {
-        let path = self.root.join(path);
+        let path = self.get_real_path(path);
 
         self.fs.set_permissions(path, perm)
     }
 
     fn symlink_metadata<P: AsRef<std::path::Path>>(&self, path: P) -> Result<Self::Metadata> {
-        let path = self.root.join(path);
+        let path = self.get_real_path(path);
 
         self.fs.symlink_metadata(path)
     }
 
     fn write<P: AsRef<std::path::Path>, C: AsRef<[u8]>>(&self, path: P, contents: C) -> Result<()> {
-        let path = self.root.join(path);
+        let path = self.get_real_path(path);
 
         self.fs.write(path, contents)
     }
 
     fn open_file<P: AsRef<std::path::Path>>(&self, path: P) -> Result<Self::File> {
-        let path = self.root.join(path);
+        let path = self.get_real_path(path);
 
         self.fs.open_file(path)
     }
@@ -282,7 +305,7 @@ impl<O: UniOpenOptions> UniOpenOptions for AltrootOpenOptions<O> {
     }
 
     fn open<P: AsRef<std::path::Path>>(&self, path: P) -> Result<Self::File> {
-        let path = self.root.join(path);
+        let path = get_real_path(&self.root, path);
         self.inner.open(path)
     }
 }
@@ -294,7 +317,7 @@ impl<T: UniDirBuilder> UniDirBuilder for AltrootDirBuilder<T> {
     }
 
     fn create<P: AsRef<std::path::Path>>(&self, path: P) -> Result<()> {
-        let path = self.root.join(path);
+        let path = get_real_path(&self.root, path);
         self.inner.create(path)
     }
 }
