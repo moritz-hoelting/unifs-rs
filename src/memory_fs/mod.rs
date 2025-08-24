@@ -23,12 +23,16 @@ mod file;
 mod metadata;
 mod open_options;
 
+#[cfg(feature = "zip")]
+mod zip;
+
 /// The `MemoryFs` struct provides a filesystem interface that operates entirely in memory.
 pub struct MemoryFs {
     inner: Arc<RwLock<MemoryFsInner>>,
 }
 
 impl MemoryFs {
+    /// Create a new instance of a `MemoryFs` without any files or directories.
     pub fn new() -> Self {
         MemoryFs {
             inner: Arc::new(RwLock::new(MemoryFsInner::new())),
@@ -832,6 +836,7 @@ impl UniFs for MemoryFs {
     }
 }
 
+/// Provides an iterator over the entries in a directory.
 pub struct MemoryReadDir {
     entries: VecDeque<crate::Result<MemoryDirEntry>>,
 }
@@ -844,6 +849,7 @@ impl Iterator for MemoryReadDir {
     }
 }
 
+/// Represents a directory entry in the in-memory filesystem.
 pub struct MemoryDirEntry {
     file_name: OsString,
     path: PathBuf,

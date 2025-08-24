@@ -6,6 +6,7 @@ Abstraction for the `std::fs` module as a trait in Rust.
 
 - `PhysicalFs`: Unit struct representing the physical root filesystem.
 - `ReadonlyFs`: Wrapper around the `UniFs` trait that provides a read-only view of the filesystem.
+- `MemoryFs`: In-memory filesystem.
 
 ## Usage
 
@@ -18,5 +19,4 @@ unifs = "0.1"
 
 ## Roadmap
 
-- In-memory filesystem
 - Stacked filesystems

@@ -2,7 +2,10 @@ use std::path::Path;
 
 use crate::{UniDirEntry, UniFileType, UniFs};
 
+/// Extends the `UniFs` trait with additional methods for filesystem operations.
 pub trait UniFsExt: UniFs {
+    /// Recursively walks through the directory at the specified path,
+    /// yielding each directory entry found.
     fn walk_dir<'a, P>(
         &'a self,
         path: P,

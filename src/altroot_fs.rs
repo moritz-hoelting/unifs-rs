@@ -14,21 +14,25 @@ pub struct AltrootFs<FS: UniFs> {
     fs: FS,
 }
 
+/// Represents a directory entry in the alternative root filesystem.
 pub struct AltrootDirEntry<T: UniDirEntry> {
     root: PathBuf,
     entry: T,
 }
 
+/// Represents a directory iterator for the alternative root filesystem.
 pub struct AltrootReadDir<FS: UniFs> {
     root: PathBuf,
     inner: FS::ReadDir,
 }
 
+/// Represents options for opening files in the alternative root filesystem.
 pub struct AltrootOpenOptions<O: UniOpenOptions> {
     root: PathBuf,
     inner: O,
 }
 
+/// Represents a directory builder for the alternative root filesystem.
 pub struct AltrootDirBuilder<T: UniDirBuilder> {
     root: PathBuf,
     inner: T,
@@ -51,7 +55,10 @@ fn get_real_path<P: AsRef<Path>, Q: AsRef<Path>>(root: P, path: Q) -> PathBuf {
 }
 
 impl<FS: UniFs> AltrootFs<FS> {
-    pub fn new<P: Into<PathBuf>>(root: P, fs: FS) -> Result<Self> {
+    /// Creates a new `AltrootFs` with the specified filesystem and root path.
+    ///
+    /// The root path must exist and be a directory.
+    pub fn new<P: Into<PathBuf>>(fs: FS, root: P) -> Result<Self> {
         let root = root.into();
         if let Ok(metadata) = fs.metadata(&root) {
             if metadata.is_dir() {
@@ -70,12 +77,15 @@ impl<FS: UniFs> AltrootFs<FS> {
         }
     }
 
-    pub fn new_or_create<P: Into<PathBuf>>(root: P, fs: FS) -> Result<Self> {
+    /// Creates a new `AltrootFs` with the specified filesystem and root path.
+    ///
+    /// If the root path does not exist, it will be created.
+    pub fn new_or_create<P: Into<PathBuf>>(fs: FS, root: P) -> Result<Self> {
         let root = root.into();
         if !fs.exists(&root).unwrap_or_default() {
             fs.create_dir_all(&root)?;
         }
-        Self::new(root, fs)
+        Self::new(fs, root)
     }
 
     fn get_real_path<P: AsRef<Path>>(&self, path: P) -> PathBuf {

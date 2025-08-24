@@ -3,9 +3,9 @@ use std::{collections::HashSet, ffi::OsString};
 use unifs::{AltrootFs, MemoryFs, UniDirEntry, UniFs as _, UniMetadata};
 
 #[test]
-fn general_test2() -> unifs::Result<()> {
+fn general_test() -> unifs::Result<()> {
     let root_fs = MemoryFs::default();
-    let fs = AltrootFs::new_or_create("root", &root_fs)?;
+    let fs = AltrootFs::new_or_create(&root_fs, "root")?;
     fs.create_dir("/test")?;
     assert!(fs.exists("test")?);
     assert!(root_fs.exists("root/test")?);

@@ -8,9 +8,11 @@ default = ["fs_access", "memory_fs"]
 fs_access = []
 memory_fs = []
 parking_lot = ["dep:parking_lot"]
+zip = ["dep:zip"]
 
 [dependencies]
 parking_lot = { version = "0.12.4", optional = true }
+zip = { version = "4.5.0", optional = true }
 
 [package.metadata.docs.rs]
 all-features = true

@@ -10,17 +10,23 @@ use crate::{
 /// The `ReadonlyFs` struct provides a read-only filesystem interface that wraps around another filesystem implementation.
 pub struct ReadonlyFs<FS: UniFs>(FS);
 
+/// A wrapper for metadata that makes it read-only.
 pub struct ReadonlyMetadata<T: UniMetadata>(T);
 
+/// A permissions type that indicates the filesystem is read-only.
 #[derive(PartialEq, Eq)]
 pub struct ReadonlyPermissions;
 
+/// A wrapper for open options that makes them read-only.
 pub struct ReadonlyOpenOptions<T: UniOpenOptions>(T);
 
+/// A directory entry that is read-only, wrapping another directory entry type.
 pub struct ReadonlyDirEntry<T: UniDirEntry>(T);
 
+/// A read-only directory iterator that wraps around another filesystem's read directory iterator.
 pub struct ReadonlyReadDir<FS: UniFs>(FS::ReadDir);
 
+/// A directory builder that is read-only, wrapping another directory builder type.
 pub struct ReadonlyDirBuilder<T: UniDirBuilder>(T);
 
 fn error(msg: &str) -> std::io::Error {
@@ -28,6 +34,7 @@ fn error(msg: &str) -> std::io::Error {
 }
 
 impl<FS: UniFs> ReadonlyFs<FS> {
+    /// Creates a new `ReadonlyFs` instance that wraps the provided filesystem.
     pub fn new(fs: FS) -> Self {
         ReadonlyFs(fs)
     }

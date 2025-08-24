@@ -1,4 +1,7 @@
+//! A unified filesystem interface for Rust, providing a consistent API for various filesystem operations.
+
 #![deny(clippy::all)]
+#![warn(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 mod traits;
@@ -36,6 +39,7 @@ pub use altroot_fs::AltrootFs;
 #[doc(inline)]
 pub use readonly_fs::ReadonlyFs;
 
+/// A type alias for the result type used throughout the filesystem operations.
 pub type Result<T> = std::result::Result<T, std::io::Error>;
 
 /// A unified file type that can represent different file types in a filesystem.
