@@ -1,10 +1,13 @@
 //! A Wrapper for a [`UniFs`] filesystem, making it read-only.
 
-use std::{io::ErrorKind, path::Path};
+use std::{
+    io::{ErrorKind, Read, Seek, Write},
+    path::Path,
+};
 
 use crate::{
     traits::{dir_builder::UniDirBuilder, open_options::UniOpenOptions},
-    Result, UniDirEntry, UniFs, UniMetadata, UniPermissions,
+    Result, UniDirEntry, UniFile, UniFs, UniMetadata, UniPermissions,
 };
 
 /// The `ReadonlyFs` struct provides a read-only filesystem interface that wraps around another filesystem implementation.
@@ -29,6 +32,10 @@ pub struct ReadonlyReadDir<FS: UniFs>(FS::ReadDir);
 /// A directory builder that is read-only, wrapping another directory builder type.
 pub struct ReadonlyDirBuilder<T: UniDirBuilder>(T);
 
+/// A file that is read-only, wrapping another file type.
+#[derive(Debug)]
+pub struct ReadonlyFile<T: UniFile>(T);
+
 fn error(msg: &str) -> std::io::Error {
     std::io::Error::new(ErrorKind::ReadOnlyFilesystem, msg)
 }
@@ -48,7 +55,7 @@ where
     type Metadata = ReadonlyMetadata<FS::Metadata>;
     type Permissions = ReadonlyPermissions;
     type ReadDir = ReadonlyReadDir<FS>;
-    type File = FS::File;
+    type File = ReadonlyFile<FS::File>;
     type OpenOptions = ReadonlyOpenOptions<FS::OpenOptions>;
     type DirBuilder = ReadonlyDirBuilder<FS::DirBuilder>;
 
@@ -163,7 +170,7 @@ where
     }
 
     fn open_file<P: AsRef<Path>>(&self, path: P) -> crate::Result<Self::File> {
-        self.0.open_file(path)
+        self.0.open_file(path).map(ReadonlyFile)
     }
 
     fn create_file<P: AsRef<Path>>(&self, _path: P) -> crate::Result<Self::File> {
@@ -229,7 +236,7 @@ impl UniPermissions for ReadonlyPermissions {
 }
 
 impl<T: UniOpenOptions> UniOpenOptions for ReadonlyOpenOptions<T> {
-    type File = T::File;
+    type File = ReadonlyFile<T::File>;
 
     fn append(&mut self, _append: bool) -> &mut Self {
         self
@@ -244,7 +251,7 @@ impl<T: UniOpenOptions> UniOpenOptions for ReadonlyOpenOptions<T> {
     }
 
     fn open<P: AsRef<Path>>(&self, path: P) -> crate::Result<Self::File> {
-        self.0.open(path)
+        self.0.open(path).map(ReadonlyFile)
     }
 
     fn read(&mut self, read: bool) -> &mut Self {
@@ -304,5 +311,63 @@ impl<T: UniDirBuilder> UniDirBuilder for ReadonlyDirBuilder<T> {
 impl<T: UniFs> From<T> for ReadonlyFs<T> {
     fn from(fs: T) -> Self {
         ReadonlyFs::new(fs)
+    }
+}
+
+impl<T: UniFile> Read for ReadonlyFile<T> {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        self.0.read(buf)
+    }
+}
+impl<T: UniFile> Seek for ReadonlyFile<T> {
+    fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64> {
+        self.0.seek(pos)
+    }
+}
+impl<T: UniFile> Write for ReadonlyFile<T> {
+    fn write(&mut self, _buf: &[u8]) -> std::io::Result<usize> {
+        Err(error("Cannot write to file in a read-only filesystem"))
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
+    }
+}
+
+impl<T: UniFile> UniFile for ReadonlyFile<T> {
+    type Metadata = ReadonlyMetadata<T::Metadata>;
+    type Permissions = ReadonlyPermissions;
+    type FileTimes = T::FileTimes;
+
+    fn sync_all(&self) -> Result<()> {
+        self.0.sync_all()
+    }
+
+    fn sync_data(&self) -> Result<()> {
+        self.0.sync_data()
+    }
+
+    fn set_len(&self, _size: u64) -> Result<()> {
+        Err(error("Cannot set length of file in a read-only filesystem"))
+    }
+
+    fn metadata(&self) -> Result<Self::Metadata> {
+        self.0.metadata().map(ReadonlyMetadata)
+    }
+
+    fn try_clone(&self) -> Result<Self> {
+        self.0.try_clone().map(ReadonlyFile)
+    }
+
+    fn set_permissions(&self, perm: Self::Permissions) -> Result<()> {
+        if perm.readonly() {
+            Ok(())
+        } else {
+            Err(error("Cannot set permissions in a read-only filesystem"))
+        }
+    }
+
+    fn set_times(&self, times: Self::FileTimes) -> Result<()> {
+        self.0.set_times(times)
     }
 }

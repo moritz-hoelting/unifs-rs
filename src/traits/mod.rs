@@ -120,7 +120,7 @@ pub trait UniFileType {
 /// Similar to the [`std::fs::DirEntry`] type.
 pub trait UniDirEntry {
     /// The type of metadata returned by this directory entry.
-    type Metadata: UniMetadata;
+    type Metadata: UniMetadata<FileType = Self::FileType>;
 
     /// The type of file type returned by this directory entry.
     type FileType: UniFileType;

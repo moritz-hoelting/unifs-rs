@@ -16,6 +16,7 @@ pub mod memory_fs;
 
 pub mod altroot_fs;
 pub mod readonly_fs;
+pub mod stacked_fs;
 
 use std::{fmt::Debug, time::SystemTime};
 
@@ -38,6 +39,8 @@ pub use memory_fs::MemoryFs;
 pub use altroot_fs::AltrootFs;
 #[doc(inline)]
 pub use readonly_fs::ReadonlyFs;
+#[doc(inline)]
+pub use stacked_fs::StackedFs;
 
 /// A type alias for the result type used throughout the filesystem operations.
 pub type Result<T> = std::result::Result<T, std::io::Error>;

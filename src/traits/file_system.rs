@@ -19,7 +19,7 @@ where
 {
     /// The metadata type returned by this filesystem.
     /// This type must implement the [`UniMetadata`] trait.
-    type Metadata: UniMetadata;
+    type Metadata: UniMetadata<Permissions = Self::Permissions>;
 
     /// An iterator over the entries within a directory.
     type ReadDir: Iterator<Item = Result<Self::DirEntry>>;
@@ -34,7 +34,7 @@ where
 
     /// The type of file this file system uses.
     /// This type must implement the [`UniFile`] trait.
-    type File: UniFile;
+    type File: UniFile<Metadata = Self::Metadata, Permissions = Self::Permissions>;
 
     /// The type of OpenOptions this file system uses.
     /// This type must implement the [`UniOpenOptions`] trait.

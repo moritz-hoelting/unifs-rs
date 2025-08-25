@@ -12,7 +12,7 @@ where
     for<'a> &'a mut Self: Read + Seek + Write,
 {
     /// The Metadata type of the file.
-    type Metadata: UniMetadata;
+    type Metadata: UniMetadata<Permissions = Self::Permissions>;
 
     /// The Permissions type of the file.
     type Permissions: UniPermissions;
