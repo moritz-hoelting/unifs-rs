@@ -19,6 +19,7 @@ use crate::{
 };
 
 mod dir_builder;
+mod extra;
 mod file;
 mod metadata;
 mod open_options;

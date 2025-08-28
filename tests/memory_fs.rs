@@ -57,6 +57,9 @@ fn general_test() -> unifs::Result<()> {
     fs.remove_dir("test2/sub/dir")?;
     assert!(!fs.exists("test2/sub/dir")?);
 
+    let loaded_fs = MemoryFs::load_from_dir(&fs, "test2")?;
+    assert!(loaded_fs.exists("file.txt")?);
+
     fs.remove_dir_all("test2")?;
     assert!(!fs.exists("test2")?);
     assert!(fs.read_dir("/test2").is_err());
